@@ -8,11 +8,37 @@ class WatchlistScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Watchlist"),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
       ),
-      body: const Center(
-        child: Text("Your watchlist is empty", style: TextStyle(fontSize: 24)),
+      body: ListView(
+        padding: const EdgeInsets.all(8),
+        children: const [
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.movie, color: Colors.grey, size: 40),
+              title: Text("The Shawshank Redemption", style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text("Added 2 days ago"),
+              trailing: Icon(Icons.delete, color: Colors.red),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.movie, color: Colors.grey, size: 40),
+              title: Text("The Godfather", style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text("Added 2 days ago"),
+              trailing: Icon(Icons.delete, color: Colors.red),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: Icon(Icons.movie, color: Colors.grey, size: 40),
+              title: Text("Pulp Fiction", style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text("Added 2 days ago"),
+              trailing: Icon(Icons.delete, color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }

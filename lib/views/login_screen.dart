@@ -25,40 +25,17 @@ class LoginScreen extends StatelessWidget {
                 "Welcome Back",
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Enter Username",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 30),
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: "Enter Username",
+                    hintText: "Enter Email Address",
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(40))),
-                    prefixIcon: Icon(Icons.person),
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                    prefixIcon: Icon(Icons.email),
                   ),
                 ),
-              ),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20, 0, 20, 5),
-                    child: Text(
-                      "Enter Password",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
               ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -67,12 +44,12 @@ class LoginScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: "Enter Password",
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(40))),
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
                     prefixIcon: Icon(Icons.lock),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
                   Navigator.pushReplacement(
@@ -87,12 +64,13 @@ class LoginScreen extends StatelessWidget {
                     width: double.infinity,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 255, 238, 0),
+                        color: const Color.fromARGB(255, 21, 219, 193),
                         borderRadius: BorderRadius.circular(20)),
-                    child: const Center(
-                      child: Text("Login",
-                          style: TextStyle(color: Colors.black, fontSize: 20)),
-                    ),
+                    child: const Text("Log In",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
@@ -107,6 +85,7 @@ class LoginScreen extends StatelessWidget {
                 child: const Text("Don't have an account? Sign Up",
                     style: TextStyle(color: Colors.blue, fontSize: 16)),
               ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
