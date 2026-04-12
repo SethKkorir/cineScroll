@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/views/login_screen.dart';
-import 'package:flutter_application_1/views/main_wrapper.dart';
+import 'package:flutter_application_1/views/splash_screen.dart';
 import 'package:get/get.dart';
 
 void main() {
@@ -16,19 +15,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
-        primaryColor: Colors.cyanAccent,
+        scaffoldBackgroundColor: const Color(0xFF0B0B0C),
+        primaryColor: const Color(0xFF05FFD1),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
       ),
-      initialRoute: "/",
-      getPages: [
-        GetPage(name: "/", page: () => const LoginScreen()),
-        GetPage(name: "/main_wrapper", page: () => const MainWrapper()),
-      ],
+      home: const SplashScreen(),
     );
   }
 }
+
 
