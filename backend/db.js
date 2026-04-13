@@ -8,6 +8,10 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
+}); 
+
+pool.on('connection', () => {
+    console.log('Database connection established');
 });
 
 module.exports = pool;

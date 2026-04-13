@@ -15,170 +15,74 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0B0C),
-      body: SafeArea(
+      body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Icon(
-                  Icons.movie_filter,
-                  size: 80,
-                  color: Color(0xFF05FFD1),
+          padding: const EdgeInsets.all(25),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Welcome Back",
+                  style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                "Welcome Back",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                "Sign in to start scrolling movies",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 50),
-              _buildInputField(
-                controller: usernameController,
-                label: "EMAIL ADDRESS",
-                icon: Icons.email_outlined,
-              ),
-              const SizedBox(height: 25),
-              Obx(() => _buildInputField(
-                    controller: passwordController,
-                    label: "PASSWORD",
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                    obscureText: !loginController.passwordVisible.value,
-                    suffix: IconButton(
-                      icon: Icon(
-                        loginController.passwordVisible.value
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: Colors.grey,
-                        size: 20,
-                      ),
-                      onPressed: () => loginController.togglePassword(),
-                    ),
-                  )),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: Color(0xFF05FFD1), fontSize: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () async {
+                const SizedBox(height: 40),
+                _buildField("Email", usernameController, Icons.email, false),
+                const SizedBox(height: 20),
+                _buildField("Password", passwordController, Icons.lock, true),
+                const SizedBox(height: 40),
+                Obx(() => GestureDetector(
+                  onTap: loginController.isLoading.value ? null : () async {
                     bool success = await loginController.login(
                       usernameController.text,
                       passwordController.text,
                     );
-                    if (success) {
-                      Get.offAll(() => const MainWrapper());
-                    }
+                    if (success) Get.offAll(() => const MainWrapper());
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF05FFD1),
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    height: 55,
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF05FFD1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    elevation: 0,
+                    child: loginController.isLoading.value 
+                      ? const SizedBox(
+                          height: 20, 
+                          width: 20, 
+                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
+                        )
+                      : const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text(
-                    "LOGIN",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
+                )),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Get.to(() => const SignupScreen()),
+                  child: const Text("Don't have an account? Sign Up", style: TextStyle(color: Color(0xFF05FFD1))),
                 ),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account? ",
-                    style: TextStyle(color: Colors.white60),
-                  ),
-                  GestureDetector(
-                    onTap: () => Get.to(() => const SignupScreen()),
-                    child: const Text(
-                      "Sign Up",
-                      style: TextStyle(
-                        color: Color(0xFF05FFD1),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool isPassword = false,
-    bool obscureText = false,
-    Widget? suffix,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.grey, size: 20),
-              suffixIcon: suffix,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 15),
-              hintText: "Enter your ${label.toLowerCase()}",
-              hintStyle: const TextStyle(color: Colors.white24, fontSize: 13),
-            ),
-          ),
-        ),
-      ],
+  Widget _buildField(String label, TextEditingController controller, IconData icon, bool isPass) {
+    return TextField(
+      controller: controller,
+      obscureText: isPass,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.05),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
     );
   }
 }

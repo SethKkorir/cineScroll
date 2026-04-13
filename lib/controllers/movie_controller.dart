@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import '../models/movie.dart';
@@ -14,18 +15,25 @@ class MovieController extends GetxController {
   }
 
   Future<void> loadMovies() async {
+    isLoading.value = true;
     try {
-      isLoading(true);
-      final response = await http.get(Uri.parse('http://10.0.2.2:3000/movies'));
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/movies'),
+      );
 
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         movies.assignAll(data.map((m) => MovieModel.fromJson(m)).toList());
+      } else {
+        Get.snackbar('Error', 'Could not load movies',
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      Get.snackbar("Sync Error", "Connection to library failed");
+      debugPrint('Movie load error: $e');
+      Get.snackbar('Connection Error', 'Make sure the server is running',
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
-      isLoading(false);
+      isLoading.value = false;
     }
   }
 }
