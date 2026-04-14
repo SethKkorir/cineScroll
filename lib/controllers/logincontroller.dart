@@ -1,50 +1,101 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 
 class LoginController extends GetxController {
   var isLoading = false.obs;
+  
+  // IP of your laptop
+  final String baseUrl = "http://10.7.28.38:3000";
 
   Future<bool> login(String email, String password) async {
     if (email.isEmpty || password.isEmpty) {
-      Get.snackbar('Error', 'All fields are required',
-          snackPosition: SnackPosition.BOTTOM);
+      _showError('All fields are required');
+      return false;
+    }
+
+    isLoading.value = true;
+    debugPrint("Attempting login for: $email");
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      isLoading.value = false;
+      debugPrint("Server Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Welcome back!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+            margin: const EdgeInsets.all(20));
+        return true;
+      } else {
+        _showError('Invalid email or password');
+        return false;
+      }
+    } catch (e) {
+      isLoading.value = false;
+      debugPrint("Connection Error: $e");
+      _showError('Cannot connect to server at $baseUrl');
+      return false;
+    }
+  }
+
+  Future<bool> signup(String name, String email, String password) async {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      _showError('All fields are required');
       return false;
     }
 
     isLoading.value = true;
 
-    // Simulate network delay for testing
-    await Future.delayed(const Duration(seconds: 1));
-    
-    isLoading.value = false;
-
-    // Test credentials: seth / 123
-    if (email == 'seth' && password == '123') {
-      Get.snackbar('Welcome back!', 'Login successful (Test Mode)',
-          snackPosition: SnackPosition.BOTTOM);
-      return true;
-    } else {
-      Get.snackbar('Error', 'Invalid credentials. Use seth/123 for testing.',
-          snackPosition: SnackPosition.BOTTOM);
-      return false;
-    }
-
-    /*
-    // REAL BACKEND LOGIN CODE (Commented out for testing)
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/login'),
+        Uri.parse('$baseUrl/signup'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({'name': name, 'email': email, 'password': password}),
       );
 
-      if (response.statusCode == 200) {
+      isLoading.value = false;
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        Get.snackbar('Success', 'Account created! Please sign in.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.white,
+            colorText: Colors.black,
+            margin: const EdgeInsets.all(20));
         return true;
+      } else {
+        _showError('Email might already be in use');
+        return false;
       }
-      return false;
     } catch (e) {
+      isLoading.value = false;
+      _showError('Connection error');
       return false;
     }
-    */
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Alert',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.white,
+      colorText: Colors.black,
+      margin: const EdgeInsets.all(20),
+      duration: const Duration(seconds: 3),
+      borderWidth: 1,
+      borderColor: Colors.grey.withValues(alpha: 0.2),
+      boxShadows: [
+        BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+      ],
+    );
   }
 }

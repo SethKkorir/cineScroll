@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_screen.dart';
-import 'dart:ui';
+import 'signup.dart'; // Import SignupScreen
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -75,7 +75,7 @@ class OnboardingScreen extends StatelessWidget {
                   
                   // Get Started Button
                   GestureDetector(
-                    onTap: () => Get.to(() => const LoginScreen()),
+                    onTap: () => Get.to(() => const SignupScreen()), // Changed to SignupScreen
                     child: Container(
                       height: 60,
                       width: double.infinity,

@@ -3,7 +3,8 @@ class MovieModel {
   final String title;
   final String description;
   final String posterUrl;
-  final String videoUrl;
+  final String videoId;
+  final String sourceType;
   final String releaseDate;
   final double rating;
 
@@ -11,8 +12,9 @@ class MovieModel {
     required this.id,
     required this.title,
     required this.description,
+    required this.videoId,
     required this.posterUrl,
-    required this.videoUrl,
+    required this.sourceType,
     required this.releaseDate,
     required this.rating,
   });
@@ -31,8 +33,9 @@ class MovieModel {
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
+      videoId: json['video_url'] ?? '',
+      sourceType: json['source_type'] ?? '',
       posterUrl: json['poster_url'] ?? '',
-      videoUrl: json['video_url'] ?? '',
       releaseDate: json['release_date'] ?? '',
       rating: parsedRating,
     );
