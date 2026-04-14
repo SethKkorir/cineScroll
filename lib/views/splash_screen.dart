@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'login_screen.dart';
+import 'dart:async';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,12 +11,32 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  int _counter = 3;
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      Get.offAll(() => const LoginScreen());
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_counter > 1) {
+        setState(() {
+          _counter--;
+        });
+      } else {
+        _timer?.cancel();
+        Get.offAll(() => const OnboardingScreen());
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -34,47 +55,49 @@ class _SplashScreenState extends State<SplashScreen> {
             ],
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.2),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                child: const Icon(
+                  Icons.movie_filter,
+                  size: 80,
+                  color: Colors.white,
+                ),
               ),
-              child: const Icon(
-                Icons.movie_filter,
-                size: 80,
+              const SizedBox(height: 20),
+              const Text(
+                "CINESCROLL",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 50),
+              const CircularProgressIndicator(
                 color: Colors.white,
+                strokeWidth: 2,
               ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "CINESCROLL",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 4,
+              const SizedBox(height: 20),
+              Text(
+                "$_counter",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-            const SizedBox(height: 50),
-            const CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "LOADING MAGIC...",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

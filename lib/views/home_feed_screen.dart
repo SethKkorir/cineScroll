@@ -29,26 +29,30 @@ class HomeFeedScreen extends StatelessWidget {
               },
             ),
             
-            // Top Navigation Overlay
-            Positioned(
-              top: 40,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildTopTab("For You", true),
-                  const SizedBox(width: 20),
-                  _buildTopTab("Following", false),
-                ],
+            // Top Navigation Overlay (Wrapped in SafeArea)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTopTab("Movies", true),
+                    const SizedBox(width: 20),
+                    _buildTopTab("Series", false),
+                  ],
+                ),
               ),
             ),
             
-            // Search Icon
-            Positioned(
-              top: 45,
-              right: 20,
-              child: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.8), size: 28),
+            // Search Icon (Wrapped in SafeArea)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 20),
+                  child: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.8), size: 28),
+                ),
+              ),
             ),
           ],
         );
@@ -73,7 +77,7 @@ class HomeFeedScreen extends StatelessWidget {
             margin: const EdgeInsets.only(top: 4),
             height: 2,
             width: 20,
-            color: Colors.orange, // Changed from Teal to Orange
+            color: Colors.orange,
           ),
       ],
     );
@@ -126,7 +130,7 @@ class _ReelTileState extends State<ReelTile> {
               : Container(color: Colors.black),
         ),
 
-        // Gradient Overlays for Readability
+        // Gradient Overlays
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -145,75 +149,76 @@ class _ReelTileState extends State<ReelTile> {
           ),
         ),
 
-        // Right Sidebar Actions (Premium Style)
+        // Right Sidebar Actions
         Positioned(
           right: 15,
           bottom: 120,
           child: Column(
             children: [
-              _buildSideAction(Icons.favorite_border, "24k"),
+              _buildSideAction(Icons.local_fire_department, "85%", Colors.orange),
               const SizedBox(height: 25),
-              _buildSideAction(Icons.bookmark_border, "Save"),
+              _buildSideAction(Icons.rate_review_outlined, "Reviews", Colors.white),
               const SizedBox(height: 25),
-              _buildSideAction(Icons.share_outlined, "Share"),
+              _buildSideAction(Icons.add, "+ List", Colors.white),
               const SizedBox(height: 25),
-              _buildSideAction(Icons.info_outline, "Info"),
+              _buildSideAction(Icons.send_outlined, "Send", Colors.white),
+              const SizedBox(height: 25),
+              _buildSideAction(Icons.info_outline, "Details", Colors.white),
             ],
           ),
         ),
 
-        // Bottom Content (Netflix Hero Style)
+        // Bottom Content
         Positioned(
           left: 20,
-          bottom: 40,
+          bottom: 100, 
           right: 80,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Movie Title
               Text(
                 widget.movie.title.toUpperCase(),
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 28,
+                  fontSize: 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 10),
-              // Description
+              const SizedBox(height: 8),
               Text(
                 widget.movie.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white70,
-                  fontSize: 14,
+                  fontSize: 13,
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 20),
-              // Watch Now Button
+              const SizedBox(height: 16),
               Row(
                 children: [
                   GestureDetector(
                     onTap: () {},
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.orange, // Changed from Teal to Orange
+                        color: Colors.orange,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.play_arrow, color: Colors.white, size: 24),
-                          SizedBox(width: 8),
+                          Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                          SizedBox(width: 6),
                           Text(
                             "WATCH NOW",
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 13,
                             ),
                           ),
                         ],
@@ -229,14 +234,14 @@ class _ReelTileState extends State<ReelTile> {
     );
   }
 
-  Widget _buildSideAction(IconData icon, String label) {
+  Widget _buildSideAction(IconData icon, String label, Color color) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white, size: 32),
+        Icon(icon, color: color, size: 30),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
         ),
       ],
     );

@@ -51,56 +51,60 @@ class _BottomNav extends StatelessWidget {
       {'icon': Icons.person_outline, 'active': Icons.person, 'label': 'Profile'},
     ];
 
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          height: 80,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.8),
-            border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(items.length, (index) {
-              final bool isActive = currentIndex == index;
-              return GestureDetector(
-                onTap: () => onTap(index),
-                behavior: HitTestBehavior.opaque,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      isActive ? items[index]['active'] as IconData : items[index]['icon'] as IconData,
-                      color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
-                      size: 26,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      items[index]['label'] as String,
-                      style: TextStyle(
-                        color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
-                        fontSize: 11,
-                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Small active dot
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      height: 3,
-                      width: isActive ? 12 : 0,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ],
+    return Container(
+      color: Colors.black.withValues(alpha: 0.8),
+      child: SafeArea(
+        top: false,
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              height: 70, // Reduced slightly for better safe area balance
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
                 ),
-              );
-            }),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(items.length, (index) {
+                  final bool isActive = currentIndex == index;
+                  return GestureDetector(
+                    onTap: () => onTap(index),
+                    behavior: HitTestBehavior.opaque,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isActive ? items[index]['active'] as IconData : items[index]['icon'] as IconData,
+                          color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
+                          size: 24, // Consistent pro sizing
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          items[index]['label'] as String,
+                          style: TextStyle(
+                            color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
+                            fontSize: 10,
+                            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 2,
+                          width: isActive ? 10 : 0,
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

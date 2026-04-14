@@ -15,102 +15,107 @@ class LoginScreen extends StatelessWidget {
     final TextEditingController passwordController = TextEditingController();
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Image with Dark Overlay
-          Positioned.fill(
-            child: Image.network(
-              'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070',
-              fit: BoxFit.cover,
+      body: SafeArea(
+        top: false, // Background images should usually go under the status bar
+        child: Stack(
+          children: [
+            // Background Image with Dark Overlay
+            Positioned.fill(
+              child: Image.network(
+                'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          Positioned.fill(
-            child: Container(color: Colors.black.withValues(alpha: 0.6)),
-          ),
-          
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    padding: const EdgeInsets.all(40),
-                    decoration: BoxDecoration(
-                      color: Colors.white, // Changed from Dark to White
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Sign In",
-                          style: TextStyle(
-                            color: Colors.black, // Dark text for white background
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
+            Positioned.fill(
+              child: Container(color: Colors.black.withValues(alpha: 0.6)),
+            ),
+            
+            Center(
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        const SizedBox(height: 30),
-                        _buildField("Email", usernameController, false),
-                        const SizedBox(height: 20),
-                        _buildField("Password", passwordController, true),
-                        const SizedBox(height: 40),
-                        Obx(() => GestureDetector(
-                          onTap: loginController.isLoading.value ? null : () async {
-                            bool success = await loginController.login(
-                              usernameController.text,
-                              passwordController.text,
-                            );
-                            if (success) Get.offAll(() => const MainWrapper());
-                          },
-                          child: Container(
-                            height: 55,
-                            width: double.infinity,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: Colors.orange, // Orange button
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: loginController.isLoading.value 
-                              ? const SizedBox(
-                                  height: 20, 
-                                  width: 20, 
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                                )
-                              : const Text(
-                                  "SIGN IN", 
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
-                                ),
-                          ),
-                        )),
-                        const SizedBox(height: 20),
-                        Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "New here?",
-                              style: TextStyle(color: Colors.black54),
-                            ),
-                            TextButton(
-                              onPressed: () => Get.to(() => const SignupScreen()),
-                              child: const Text(
-                                "Sign up now",
-                                style: TextStyle(color: Colors.orange),
+                              "Sign In",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
                               ),
+                            ),
+                            const SizedBox(height: 30),
+                            _buildField("Email", usernameController, false),
+                            const SizedBox(height: 20),
+                            _buildField("Password", passwordController, true),
+                            const SizedBox(height: 40),
+                            Obx(() => GestureDetector(
+                              onTap: loginController.isLoading.value ? null : () async {
+                                bool success = await loginController.login(
+                                  usernameController.text,
+                                  passwordController.text,
+                                );
+                                if (success) Get.offAll(() => const MainWrapper());
+                              },
+                              child: Container(
+                                height: 55,
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: Colors.orange,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: loginController.isLoading.value 
+                                  ? const SizedBox(
+                                      height: 20, 
+                                      width: 20, 
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                                    )
+                                  : const Text(
+                                      "SIGN IN", 
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                                    ),
+                              ),
+                            )),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                const Text(
+                                  "New here?",
+                                  style: TextStyle(color: Colors.black54),
+                                ),
+                                TextButton(
+                                  onPressed: () => Get.to(() => const SignupScreen()),
+                                  child: const Text(
+                                    "Sign up now",
+                                    style: TextStyle(color: Colors.orange),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
