@@ -3,6 +3,7 @@ import 'package:flutter_application_1/views/home_feed_screen.dart';
 import 'package:flutter_application_1/views/discover_screen.dart';
 import 'package:flutter_application_1/views/watchlist_screen.dart';
 import 'package:flutter_application_1/views/profile_screen.dart';
+import 'dart:ui';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -24,6 +25,7 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true, // This allows the body to go behind the blurred nav bar
       backgroundColor: Colors.black,
       body: _screens[_currentIndex],
       bottomNavigationBar: _BottomNav(
@@ -34,8 +36,6 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 }
 
-// ─── Custom Bottom Nav Bar ─────────────────────────────────────────────────────
-
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -44,74 +44,66 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      _NavItem(icon: Icons.movie_filter_outlined, activeIcon: Icons.movie_filter, label: 'Feed'),
-      _NavItem(icon: Icons.explore_outlined, activeIcon: Icons.explore, label: 'Discover'),
-      _NavItem(icon: Icons.bookmark_border, activeIcon: Icons.bookmark, label: 'Watchlist'),
-      _NavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile'),
+    final items = [
+      {'icon': Icons.movie_filter_outlined, 'active': Icons.movie_filter, 'label': 'Feed'},
+      {'icon': Icons.explore_outlined, 'active': Icons.explore, 'label': 'Discover'},
+      {'icon': Icons.bookmark_border, 'active': Icons.bookmark, 'label': 'Watchlist'},
+      {'icon': Icons.person_outline, 'active': Icons.person, 'label': 'Profile'},
     ];
 
-    return Container(
-      // Thin cyan line at the top of the bar
-      decoration: const BoxDecoration(
-        color: Color(0xFF0E0E0E),
-        border: Border(
-          top: BorderSide(color: Color(0xFF05FFD1), width: 0.5),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(items.length, (index) {
-            final item = items[index];
-            final isActive = index == currentIndex;
-
-            return GestureDetector(
-              onTap: () => onTap(index),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  // Active tab gets a subtle cyan glow pill
-                  color: isActive
-                      ? const Color(0xFF05FFD1).withValues(alpha: 0.1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.8),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final bool isActive = currentIndex == index;
+              return GestureDetector(
+                onTap: () => onTap(index),
+                behavior: HitTestBehavior.opaque,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      isActive ? item.activeIcon : item.icon,
-                      color: isActive ? const Color(0xFF05FFD1) : Colors.grey,
-                      size: 24,
+                      isActive ? items[index]['active'] as IconData : items[index]['icon'] as IconData,
+                      color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
+                      size: 26,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.label,
+                      items[index]['label'] as String,
                       style: TextStyle(
-                        color: isActive ? const Color(0xFF05FFD1) : Colors.grey,
-                        fontSize: 10,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                        color: isActive ? Colors.orange : Colors.white.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Small active dot
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      height: 3,
+                      width: isActive ? 12 : 0,
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ],
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       ),
     );
   }
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  const _NavItem({required this.icon, required this.activeIcon, required this.label});
 }

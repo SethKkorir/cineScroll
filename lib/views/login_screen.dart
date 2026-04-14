@@ -3,6 +3,7 @@ import 'package:flutter_application_1/views/signup.dart';
 import 'package:flutter_application_1/views/main_wrapper.dart';
 import 'package:flutter_application_1/controllers/logincontroller.dart';
 import 'package:get/get.dart';
+import 'dart:ui';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -14,74 +15,125 @@ class LoginScreen extends StatelessWidget {
     final TextEditingController passwordController = TextEditingController();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0C),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(25),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Welcome Back",
-                  style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 40),
-                _buildField("Email", usernameController, Icons.email, false),
-                const SizedBox(height: 20),
-                _buildField("Password", passwordController, Icons.lock, true),
-                const SizedBox(height: 40),
-                Obx(() => GestureDetector(
-                  onTap: loginController.isLoading.value ? null : () async {
-                    bool success = await loginController.login(
-                      usernameController.text,
-                      passwordController.text,
-                    );
-                    if (success) Get.offAll(() => const MainWrapper());
-                  },
-                  child: Container(
-                    height: 55,
-                    width: double.infinity,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF05FFD1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: loginController.isLoading.value 
-                      ? const SizedBox(
-                          height: 20, 
-                          width: 20, 
-                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                        )
-                      : const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                  ),
-                )),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () => Get.to(() => const SignupScreen()),
-                  child: const Text("Don't have an account? Sign Up", style: TextStyle(color: Color(0xFF05FFD1))),
-                ),
-              ],
+      body: Stack(
+        children: [
+          // Background Image with Dark Overlay
+          Positioned.fill(
+            child: Image.network(
+              'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070',
+              fit: BoxFit.cover,
             ),
           ),
-        ),
+          Positioned.fill(
+            child: Container(color: Colors.black.withValues(alpha: 0.6)),
+          ),
+          
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Changed from Dark to White
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Sign In",
+                          style: TextStyle(
+                            color: Colors.black, // Dark text for white background
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        _buildField("Email", usernameController, false),
+                        const SizedBox(height: 20),
+                        _buildField("Password", passwordController, true),
+                        const SizedBox(height: 40),
+                        Obx(() => GestureDetector(
+                          onTap: loginController.isLoading.value ? null : () async {
+                            bool success = await loginController.login(
+                              usernameController.text,
+                              passwordController.text,
+                            );
+                            if (success) Get.offAll(() => const MainWrapper());
+                          },
+                          child: Container(
+                            height: 55,
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.orange, // Orange button
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: loginController.isLoading.value 
+                              ? const SizedBox(
+                                  height: 20, 
+                                  width: 20, 
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                                )
+                              : const Text(
+                                  "SIGN IN", 
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                                ),
+                          ),
+                        )),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            const Text(
+                              "New here?",
+                              style: TextStyle(color: Colors.black54),
+                            ),
+                            TextButton(
+                              onPressed: () => Get.to(() => const SignupScreen()),
+                              child: const Text(
+                                "Sign up now",
+                                style: TextStyle(color: Colors.orange),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, IconData icon, bool isPass) {
+  Widget _buildField(String label, TextEditingController controller, bool isPass) {
     return TextField(
       controller: controller,
       obscureText: isPass,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: Colors.grey),
+        labelStyle: const TextStyle(color: Colors.black54),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.05),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        fillColor: Colors.grey.withValues(alpha: 0.1),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.orange, width: 1),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
     );
   }

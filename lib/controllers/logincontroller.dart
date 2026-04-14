@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
@@ -15,6 +13,24 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
 
+    // Simulate network delay for testing
+    await Future.delayed(const Duration(seconds: 1));
+    
+    isLoading.value = false;
+
+    // Test credentials: seth / 123
+    if (email == 'seth' && password == '123') {
+      Get.snackbar('Welcome back!', 'Login successful (Test Mode)',
+          snackPosition: SnackPosition.BOTTOM);
+      return true;
+    } else {
+      Get.snackbar('Error', 'Invalid credentials. Use seth/123 for testing.',
+          snackPosition: SnackPosition.BOTTOM);
+      return false;
+    }
+
+    /*
+    // REAL BACKEND LOGIN CODE (Commented out for testing)
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3000/login'),
@@ -22,24 +38,13 @@ class LoginController extends GetxController {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      isLoading.value = false;
-
       if (response.statusCode == 200) {
-        Get.snackbar('Welcome back!', 'Login successful',
-            snackPosition: SnackPosition.BOTTOM);
         return true;
-      } else {
-        final data = jsonDecode(response.body);
-        Get.snackbar('Error', data['message'] ?? 'Login failed',
-            snackPosition: SnackPosition.BOTTOM);
-        return false;
       }
+      return false;
     } catch (e) {
-      isLoading.value = false;
-      debugPrint('Login error: $e');
-      Get.snackbar('Error', 'Could not connect to server',
-          snackPosition: SnackPosition.BOTTOM);
       return false;
     }
+    */
   }
 }

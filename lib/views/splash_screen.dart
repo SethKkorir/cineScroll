@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 10), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Get.offAll(() => const LoginScreen());
     });
   }
@@ -21,8 +21,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0C),
-      body: Center(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.orange,
+              Colors.blue,
+            ],
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -30,12 +41,12 @@ class _SplashScreenState extends State<SplashScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF05FFD1).withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               child: const Icon(
                 Icons.movie_filter,
                 size: 80,
-                color: Color(0xFF05FFD1),
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
@@ -50,14 +61,14 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 50),
             const CircularProgressIndicator(
-              color: Color(0xFF05FFD1),
+              color: Colors.white,
               strokeWidth: 2,
             ),
             const SizedBox(height: 20),
             const Text(
               "LOADING MAGIC...",
               style: TextStyle(
-                color: Colors.grey,
+                color: Colors.white,
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 2,
