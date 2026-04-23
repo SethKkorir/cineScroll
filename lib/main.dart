@@ -1,8 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/views/splash_screen.dart';
 import 'package:get/get.dart';
+import 'controllers/logincontroller.dart';
 
 void main() {
+  // Pre-load the LoginController so it's always available
+  Get.put(LoginController(), permanent: true);
   runApp(const MyApp());
 }
 
@@ -13,10 +17,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'CINESCROLL',
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+      ),
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B0B0C),
-        primaryColor: const Color(0xFF05FFD1),
+        scaffoldBackgroundColor: Colors.black,
+        primaryColor: Colors.orange,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(color: Colors.white70),
+        ),
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.orange,
+          secondary: Colors.orangeAccent,
+          surface: Colors.black,
+        ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,

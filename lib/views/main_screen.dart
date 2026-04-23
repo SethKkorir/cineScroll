@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_feed_screen.dart';
 import 'watchlist_screen.dart';
+import 'discover_screen.dart';
+import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,9 +17,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     const HomeFeedScreen(),
-    const Center(child: Text("Discover Coming Soon", style: TextStyle(color: Colors.white))),
+    const DiscoverScreen(),
     const WatchlistScreen(),
-    const Center(child: Text("Profile Coming Soon", style: TextStyle(color: Colors.white))),
+    const ProfileScreen(),
   ];
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/logincontroller.dart';
-import 'home_feed_screen.dart';
+import 'main_screen.dart';
 import 'signup.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,7 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final LoginController loginController = Get.put(LoginController());
+  // Added permanent: true so the user data stays for the Profile screen
+  final LoginController loginController = Get.put(LoginController(), permanent: true);
   bool _isPasswordVisible = false;
 
   @override
@@ -74,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             bool success = await loginController.login(
                                 emailController.text, passwordController.text);
                             if (success) {
-                              Get.offAll(() => const HomeFeedScreen());
+                              Get.offAll(() => const MainScreen());
                             }
                           },
                     style: ElevatedButton.styleFrom(

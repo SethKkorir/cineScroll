@@ -5,9 +5,10 @@ import 'package:http/http.dart' as http;
 
 class LoginController extends GetxController {
   var isLoading = false.obs;
-  
-  // IP of your laptop
-  final String baseUrl = "http://10.7.28.38:3000";
+  var userName = "User".obs;
+  var userEmail = "".obs;
+ 
+  final String baseUrl = "http://10.7.11.220:3000";
 
   Future<bool> login(String email, String password) async {
     if (email.isEmpty || password.isEmpty) {
@@ -29,6 +30,11 @@ class LoginController extends GetxController {
       debugPrint("Server Response: ${response.statusCode} - ${response.body}");
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        userEmail.value = email;
+        // If your server returns the name, store it
+        if (data['name'] != null) userName.value = data['name'];
+
         Get.snackbar('Success', 'Welcome back!',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.white,

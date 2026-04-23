@@ -27,3 +27,7 @@ flutter:
 
   assets:
     - assets/video.mp4
+    - assets/video2.mp4
+    - assets/logo.png
+    - assets/logo2.png
+    - assets/logoo.png

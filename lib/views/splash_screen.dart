@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import 'onboarding_screen.dart';
+import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,7 +12,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  int _counter = 3;
+  int _counter = 5; // Increased to 5 seconds
   Timer? _timer;
 
   @override
@@ -42,6 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black, // Cinematic Black background
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -50,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.orange,
-              Colors.blue,
+              Colors.black,
+              Color(0xFF1A1A1A), // Dark grey gradient
             ],
           ),
         ),
@@ -60,40 +62,51 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.orange.withOpacity(0.1),
+                  border: Border.all(color: Colors.orange.withOpacity(0.2), width: 2),
                 ),
                 child: const Icon(
                   Icons.movie_filter,
                   size: 80,
-                  color: Colors.white,
+                  color: Colors.orange, // Branded Orange icon
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               const Text(
                 "CINESCROLL",
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 28,
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 4,
+                  letterSpacing: 6,
                 ),
               ),
-              const SizedBox(height: 50),
-              const CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                "$_counter",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+              const SizedBox(height: 10),
+              const Text(
+                "PREMIUM MOVIE TRAILERS",
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 60),
+              const CircularProgressIndicator(
+                color: Colors.orange, // Orange loader
+                strokeWidth: 3,
+              ),
+              const SizedBox(height: 30),
+              Text(
+                "LOADING EXPERIENCE in $_counter...",
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
               ),
             ],

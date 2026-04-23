@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../controllers/logincontroller.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -7,121 +8,101 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final LoginController loginController = Get.find<LoginController>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("My Profile", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text("PROFILE", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {},
+          )
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 30),
-            // Profile Header
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.orange,
-                    ),
-                    child: const CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.person, size: 70, color: Colors.orange),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.edit, color: Colors.white, size: 18),
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          const SizedBox(height: 30),
+          // User Avatar
+          Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.orange,
+              child: Obx(() => Text(
+                loginController.userName.value[0].toUpperCase(),
+                style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
+              )),
+            ),
+          ),
+          const SizedBox(height: 15),
+          Obx(() => Text(
+            loginController.userName.value,
+            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+          )),
+          Obx(() => Text(
+            loginController.userEmail.value,
+            style: const TextStyle(color: Colors.white54, fontSize: 14),
+          )),
+          const SizedBox(height: 30),
+
+          // Profile Stats
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildStat("Watchlist", "12"),
+              _buildStat("Reviews", "0"),
+              _buildStat("Points", "500"),
+            ],
+          ),
+          const SizedBox(height: 40),
+
+          // Profile Options
+          _buildOption(Icons.history, "Watch History"),
+          _buildOption(Icons.notifications_outlined, "Notifications"),
+          _buildOption(Icons.security, "Security Settings"),
+          _buildOption(Icons.help_outline, "Help & Support"),
+          
+          const Spacer(),
+
+          // Logout Button
+          Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () => Get.offAll(() => const LoginScreen()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent.withOpacity(0.1),
+                  foregroundColor: Colors.redAccent,
+                  side: const BorderSide(color: Colors.redAccent),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text("SIGN OUT", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              "Seth Korir",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            const Text(
-              "seth@cinescroll.com",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            
-            const SizedBox(height: 40),
-            
-            // Stats Row (Simple)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStat("12", "Watchlist"),
-                  _buildStat("45", "Liked"),
-                  _buildStat("8", "Followers"),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 40),
-            
-            // Menu Items
-            _buildMenuItem(Icons.settings_outlined, "Account Settings"),
-            _buildMenuItem(Icons.notifications_none, "Notifications"),
-            _buildMenuItem(Icons.help_outline, "Help & Support"),
-            _buildMenuItem(Icons.info_outline, "About Cinescroll"),
-            
-            const SizedBox(height: 20),
-            
-            // Logout
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ListTile(
-                onTap: () => Get.offAll(() => const LoginScreen()),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                tileColor: Colors.red.withValues(alpha: 0.05),
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text("Log Out", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.red),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStat(String value, String label) {
+  Widget _buildStat(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
       ],
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.black87),
-        title: Text(title, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        onTap: () {},
-      ),
+  Widget _buildOption(IconData icon, String title) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.orange, size: 24),
+      title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
+      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+      onTap: () {},
     );
   }
 }

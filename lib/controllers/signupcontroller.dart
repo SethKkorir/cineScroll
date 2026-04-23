@@ -35,7 +35,7 @@ class SignupController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/users'),
+        Uri.parse('http://10.7.11.220:3000/users'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'full_name': name, 'email': email, 'password': password}),
       );

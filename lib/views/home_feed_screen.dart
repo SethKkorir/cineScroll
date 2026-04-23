@@ -58,9 +58,15 @@ class _ReelTileState extends State<ReelTile> {
   }
 
   void _initializePlayer() {
+    debugPrint("=== Initializing Player ===");
+    debugPrint("Movie: ${widget.movie.title}");
+    debugPrint("Source Type: ${widget.movie.sourceType}");
+    debugPrint("Video ID/URL: ${widget.movie.VideoUrl}");
+
     if (widget.movie.sourceType == 'youtube') {
+      // YouTube videos
       _youtubeController = YoutubePlayerController(
-        initialVideoId: widget.movie.videoId,
+        initialVideoId: widget.movie.VideoUrl,
         flags: const YoutubePlayerFlags(
           autoPlay: true,
           mute: true,
@@ -68,31 +74,59 @@ class _ReelTileState extends State<ReelTile> {
           loop: true,
         ),
       );
-    } else {
-      // Clean path just in case
-      String videoPath = widget.movie.videoId.trim();
+    } else if (widget.movie.sourceType == 'local') {
+      // Local asset videos
+      String videoPath = widget.movie.VideoUrl.trim();
       
-      if (videoPath.contains('assets/')) {
-        // Ensure path starts with 'assets/' and not '/assets/'
-        if (videoPath.startsWith('/')) videoPath = videoPath.substring(1);
-        _videoController = VideoPlayerController.asset(videoPath);
-      } else {
-        _videoController = VideoPlayerController.networkUrl(Uri.parse(videoPath));
-      }
 
-      _videoController?.initialize().then((_) {
-        if (mounted) {
-          setState(() {});
-          _videoController?.play();
-          _videoController?.setLooping(true);
-        }
-      }).catchError((error) {
-        debugPrint("Video Player Error: $error");
-        if (mounted) {
-          setState(() => _isError = true);
-        }
-      });
+      if (videoPath.startsWith('/')) {
+        videoPath = videoPath.substring(1);
+      }
+      
+      debugPrint("Loading local asset: $videoPath");
+      _videoController = VideoPlayerController.asset(videoPath);
+      _initializeVideoController();
+      
+    } else if (widget.movie.sourceType == 'cloudinary') {
+      // Cloudinary network videos (from database)
+      debugPrint("Loading Cloudinary video: ${widget.movie.VideoUrl}");
+      _videoController = VideoPlayerController.networkUrl(
+        Uri.parse(widget.movie.VideoUrl),
+      );
+      _initializeVideoController();
+      
+    } else {
+      // Fallback: try to detect if it's a URL or asset path
+      String videoPath = widget.movie.VideoUrl.trim();
+      
+      if (videoPath.startsWith('http://') || videoPath.startsWith('https://')) {
+        // Network URL
+        debugPrint("Loading network video: $videoPath");
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(videoPath));
+      } else {
+        // Asset path
+        if (videoPath.startsWith('/')) videoPath = videoPath.substring(1);
+        debugPrint("Loading asset: $videoPath");
+        _videoController = VideoPlayerController.asset(videoPath);
+      }
+      _initializeVideoController();
     }
+  }
+
+  void _initializeVideoController() {
+    _videoController?.initialize().then((_) {
+      if (mounted) {
+        setState(() {});
+        _videoController?.play();
+        _videoController?.setLooping(true);
+        debugPrint("✅ Video initialized successfully");
+      }
+    }).catchError((error) {
+      debugPrint("❌ Video Player Error: $error");
+      if (mounted) {
+        setState(() => _isError = true);
+      }
+    });
   }
 
   @override
@@ -124,6 +158,23 @@ class _ReelTileState extends State<ReelTile> {
                 : const Center(child: CircularProgressIndicator(color: Colors.orange)),
         ),
 
+        // Tap to play/pause (for non-YouTube videos)
+        if (widget.movie.sourceType != 'youtube' && 
+            _videoController != null && 
+            _videoController!.value.isInitialized)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                if (_videoController!.value.isPlaying) {
+                  _videoController!.pause();
+                } else {
+                  _videoController!.play();
+                }
+              });
+            },
+            child: Container(color: Colors.transparent),
+          ),
+
         // UI Overlay
         _buildContentOverlay(),
         _buildSideActions(),
@@ -134,13 +185,22 @@ class _ReelTileState extends State<ReelTile> {
   Widget _buildErrorWidget() {
     return Container(
       color: Colors.grey[900],
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, color: Colors.orange, size: 40),
-            SizedBox(height: 10),
-            Text("Video Unavailable", style: TextStyle(color: Colors.white70)),
+            const Icon(Icons.error_outline, color: Colors.orange, size: 40),
+            const SizedBox(height: 10),
+            const Text(
+              "Video Unavailable", 
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.movie.title,
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -157,14 +217,53 @@ class _ReelTileState extends State<ReelTile> {
         children: [
           Text(
             widget.movie.title.toUpperCase(),
-            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 1.2),
+            style: const TextStyle(
+              color: Colors.white, 
+              fontSize: 24, 
+              fontWeight: FontWeight.w900, 
+              letterSpacing: 1.2,
+              shadows: [
+                Shadow(blurRadius: 10, color: Colors.black, offset: Offset(2, 2)),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.movie.description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+            style: const TextStyle(
+              color: Colors.white70, 
+              fontSize: 13, 
+              height: 1.4,
+              shadows: [
+                Shadow(blurRadius: 8, color: Colors.black, offset: Offset(1, 1)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Rating and Year
+          Row(
+            children: [
+              const Icon(Icons.star, color: Colors.orange, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                widget.movie.rating.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                widget.movie.releaseDate,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           GestureDetector(
@@ -208,16 +307,23 @@ class _ReelTileState extends State<ReelTile> {
   }
 
   Widget _buildSideActions() {
+    final MovieController movieController = Get.find<MovieController>();
     return Positioned(
       right: 15,
-      bottom: 120,
+      bottom: 100,
       child: Column(
         children: [
           _sideIconButton(Icons.local_fire_department, "85%", Colors.orange, "Hype"),
           const SizedBox(height: 25),
           _sideIconButton(Icons.rate_review_outlined, "Reviews", Colors.white, "Reviews"),
           const SizedBox(height: 25),
-          _sideIconButton(Icons.add, "+ List", Colors.white, "Watchlist"),
+          Obx(() => _sideIconButton(
+            movieController.isInWatchlist(widget.movie) ? Icons.check_circle : Icons.add, 
+            movieController.isInWatchlist(widget.movie) ? "Saved" : "+ List", 
+            movieController.isInWatchlist(widget.movie) ? Colors.orange : Colors.white, 
+            "Watchlist",
+            onTap: () => movieController.toggleWatchlist(widget.movie),
+          )),
           const SizedBox(height: 25),
           _sideIconButton(Icons.send_outlined, "Send", Colors.white, "Sharing"),
           const SizedBox(height: 25),
@@ -227,12 +333,12 @@ class _ReelTileState extends State<ReelTile> {
     );
   }
 
-  Widget _sideIconButton(IconData icon, String label, Color color, String featureName) {
+  Widget _sideIconButton(IconData icon, String label, Color color, String featureName, {VoidCallback? onTap}) {
     return GestureDetector(
-      onTap: () {
+      onTap: onTap ?? () {
         Get.snackbar(
           "Coming Soon",
-          "$featureName is being prepared for CINESCROLL.",
+          "$featureName is being prepared.",
           backgroundColor: Colors.white,
           colorText: Colors.black,
           snackPosition: SnackPosition.BOTTOM,
@@ -244,7 +350,17 @@ class _ReelTileState extends State<ReelTile> {
         children: [
           Icon(icon, color: color, size: 30),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+          Text(
+            label, 
+            style: TextStyle(
+              color: color, 
+              fontSize: 10, 
+              fontWeight: FontWeight.bold,
+              shadows: const [
+                Shadow(blurRadius: 4, color: Colors.black),
+              ],
+            ),
+          ),
         ],
       ),
     );
