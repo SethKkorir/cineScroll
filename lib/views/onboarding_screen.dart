@@ -43,7 +43,7 @@ class OnboardingScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
-                    "CINESCROLL",
+                    "CINE SCROLL",
                     style: TextStyle(
                       color: Colors.orange,
                       fontSize: 24,
@@ -75,7 +75,7 @@ class OnboardingScreen extends StatelessWidget {
                   
                   // Get Started Button
                   GestureDetector(
-                    onTap: () => Get.to(() => const SignupScreen()), // Changed to SignupScreen
+                    onTap: () => Get.to(() => const SignupScreen()), // Navigate to SignupScreen
                     child: Container(
                       height: 60,
                       width: double.infinity,

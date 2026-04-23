@@ -1,12 +1,18 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../controllers/movie_controller.dart';
+
 class LoginController extends GetxController {
   var isLoading = false.obs;
+  var userId = 0.obs; // Added to track user ID for watchlist
   var userName = "User".obs;
   var userEmail = "".obs;
+  var userBio = "Cinema Lover 🍿".obs; // Added bio
+  var profileUrl = "".obs; // Added profile URL
  
   final String baseUrl = "http://10.7.11.220:3000";
 
@@ -32,8 +38,22 @@ class LoginController extends GetxController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         userEmail.value = email;
-        // If your server returns the name, store it
-        if (data['name'] != null) userName.value = data['name'];
+        
+        // Handle nested user object from server
+        if (data['user'] != null) {
+          userId.value = data['user']['id'] ?? 0;
+          userName.value = data['user']['fullName'] ?? data['user']['full_name'] ?? "User";
+          userBio.value = data['user']['bio'] ?? "Cinema Lover 🍿";
+          profileUrl.value = data['user']['profileUrl'] ?? "";
+        }
+
+        // --- NEW: Sync Watchlist after login ---
+        try {
+          final movieController = Get.find<MovieController>();
+          movieController.fetchWatchlist();
+        } catch (e) {
+          debugPrint("MovieController not found yet: $e");
+        }
 
         Get.snackbar('Success', 'Welcome back!',
             snackPosition: SnackPosition.BOTTOM,
@@ -63,9 +83,9 @@ class LoginController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/signup'),
+        Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'name': name, 'email': email, 'password': password}),
+        body: jsonEncode({'fullName': name, 'email': email, 'password': password}),
       );
 
       isLoading.value = false;

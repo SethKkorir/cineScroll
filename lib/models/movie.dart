@@ -3,44 +3,38 @@ class MovieModel {
   final String title;
   final String description;
   final String posterUrl;
-  // final String videoId;
-  final String VideoUrl;
-  final String sourceType;
+  final String videoUrl;
   final String releaseDate;
   final double rating;
+  final String sourceType; // Added this back to fix the compile error
 
   MovieModel({
     required this.id,
     required this.title,
     required this.description,
-    // required this.videoId,
-    required this.VideoUrl,
     required this.posterUrl,
-    required this.sourceType,
+    required this.videoUrl,
     required this.releaseDate,
     required this.rating,
+    this.sourceType = "network", // Default is network
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
-    double parsedRating = 0.0;
-    if (json['rating'] != null) {
-      if (json['rating'] is String) {
-        parsedRating = double.tryParse(json['rating']) ?? 0.0;
-      } else {
-        parsedRating = (json['rating'] as num).toDouble();
-      }
+    double parseRating(dynamic val) {
+      if (val is num) return val.toDouble();
+      if (val is String) return double.tryParse(val) ?? 0.0;
+      return 0.0;
     }
 
     return MovieModel(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      // videoId: json['video_url'] ?? '',
-      VideoUrl: json['video_url'] ?? '',
-      sourceType: json['source_type'] ?? '',
-      posterUrl: json['poster_url'] ?? '',
-      releaseDate: json['release_date'] ?? '',
-      rating: parsedRating,
+      id: json['id'] is int ? json['id'] : 0,
+      title: json['title']?.toString() ?? 'No Title',
+      description: json['description']?.toString() ?? '',
+      posterUrl: (json['posterUrl'] ?? json['poster_url'] ?? '').toString(),
+      videoUrl: (json['videoUrl'] ?? json['video_url'] ?? '').toString(),
+      releaseDate: (json['releaseDate'] ?? json['release_date'] ?? '').toString(),
+      rating: parseRating(json['rating']),
+      sourceType: (json['sourceType'] ?? json['source_type'] ?? 'network').toString(),
     );
   }
 }

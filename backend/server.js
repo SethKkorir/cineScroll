@@ -30,14 +30,14 @@ function validateMovieInput(title, description, poster_url, video_url, release_d
 }
 
 app.post('/users', async (req, res) => {
-    const { full_name, email, password } = req.body;
-    if (!validateUserInput(full_name, email, password)) {
+    const { fullName, email, password } = req.body;
+    if (!email || !password) {
         return res.status(400).json({ error: 'Invalid input' });
     }
     try {
         const [result] = await db.execute(
-            'INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)',
-            [full_name || null, email, password]
+            'INSERT INTO users (fullName, email, password) VALUES (?, ?, ?)',
+            [fullName || null, email, password]
         );
         res.status(201).json({ user_id: result.insertId });
     } catch (error) {
@@ -57,6 +57,7 @@ app.post('/login', async (req, res) => {
             [email, password]
         );
         if (rows.length > 0) {
+            // Return the first user found
             res.status(200).json({ success: true, user: rows[0] });
         } else {
             res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -70,6 +71,7 @@ app.post('/login', async (req, res) => {
 app.get('/movies', async (req, res) => {
     try {
         const [rows] = await db.execute('SELECT * FROM movies');
+        console.log(`Fetched ${rows.length} movies`);
         res.json(rows);
     } catch (error) {
         console.error('Database error in GET /movies:', error);
@@ -78,26 +80,120 @@ app.get('/movies', async (req, res) => {
 });
 
 app.post('/movies', async (req, res) => {
-    const { title, description, poster_url, video_url, release_date, rating } = req.body;
-    if (!validateMovieInput(title, description, poster_url, video_url, release_date, rating)) {
-        return res.status(400).json({ error: 'Invalid input' });
+    const { title, description, posterUrl, videoUrl, releaseDate, rating, sourceType } = req.body;
+    if (!title) {
+        return res.status(400).json({ error: 'Title is required' });
     }
     try {
         const [result] = await db.execute(
-            'INSERT INTO movies (title, description, poster_url, video_url, release_date, rating) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO movies (title, description, posterUrl, videoUrl, releaseDate, rating, sourceType) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 title,
                 description || null,
-                poster_url || null,
-                video_url || null,
-                release_date || null,
-                rating || null
+                posterUrl || null,
+                videoUrl || null,
+                releaseDate || null,
+                rating || null,
+                sourceType || 'network'
             ]
         );
         res.status(201).json({ movie_id: result.insertId });
     } catch (error) {
         console.error('Database error in POST /movies:', error);
         res.status(500).json({ error: 'Database Error', details: error.message });
+    }
+});
+
+// --- WATCHLIST ENDPOINTS ---
+
+// 1. Get watchlist for a user
+app.get('/watchlist/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const [rows] = await db.execute(
+            'SELECT m.* FROM movies m JOIN watchlist w ON m.id = w.movieId WHERE w.userId = ?',
+            [userId]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching watchlist:', error);
+        res.status(500).json({ error: 'Database Error' });
+    }
+});
+
+// 2. Add to watchlist
+app.post('/watchlist', async (req, res) => {
+    const { userId, movieId } = req.body;
+    try {
+        await db.execute(
+            'INSERT IGNORE INTO watchlist (userId, movieId) VALUES (?, ?)',
+            [userId, movieId]
+        );
+        res.status(201).json({ success: true, message: 'Added to watchlist' });
+    } catch (error) {
+        console.error('Error adding to watchlist:', error);
+        res.status(500).json({ error: 'Database Error' });
+    }
+});
+
+// 3. Remove from watchlist
+app.delete('/watchlist/:userId/:movieId', async (req, res) => {
+    const { userId, movieId } = req.params;
+    try {
+        await db.execute(
+            'DELETE FROM watchlist WHERE userId = ? AND movieId = ?',
+            [userId, movieId]
+        );
+        res.json({ success: true, message: 'Removed from watchlist' });
+    } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        res.status(500).json({ error: 'Database Error' });
+    }
+});
+
+// --- USER PROFILE & STATS ENDPOINTS ---
+
+// Get user profile details
+app.get('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.execute('SELECT id, fullName, email, bio, profileUrl, created_at FROM users WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ error: 'Database Error' });
+    }
+});
+
+// Get user stats (Watchlist count)
+app.get('/users/:id/stats', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await db.execute('SELECT COUNT(*) as watchlistCount FROM watchlist WHERE userId = ?', [id]);
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ error: 'Database Error' });
+    }
+});
+
+// Update user profile (Bio, Name, Profile Image)
+app.put('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { fullName, bio, profileUrl } = req.body;
+    try {
+        await db.execute(
+            'UPDATE users SET fullName = ?, bio = ?, profileUrl = ? WHERE id = ?',
+            [fullName, bio || null, profileUrl || null, id]
+        );
+        res.json({ success: true, message: 'Profile updated' });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Database Error' });
     }
 });
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/movie_controller.dart';
 import '../models/movie.dart';
@@ -11,7 +10,8 @@ class HomeFeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MovieController movieController = Get.put(MovieController());
+    // Finding our movie controller
+    final MovieController movieController = Get.find<MovieController>();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -22,9 +22,12 @@ class HomeFeedScreen extends StatelessWidget {
 
         if (movieController.movies.isEmpty) {
           return const Center(
-            child: Text("No movies found", style: TextStyle(color: Colors.white)),
+            child: Text("No movies found. Check your server!", 
+              style: TextStyle(color: Colors.white)),
           );
         }
+
+        debugPrint("Building Home Feed with ${movieController.movies.length} movies");
 
         return PageView.builder(
           scrollDirection: Axis.vertical,
@@ -47,322 +50,198 @@ class ReelTile extends StatefulWidget {
 }
 
 class _ReelTileState extends State<ReelTile> {
-  VideoPlayerController? _videoController;
-  YoutubePlayerController? _youtubeController;
-  bool _isError = false;
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializePlayer();
+    _setupVideo();
   }
 
-  void _initializePlayer() {
-    debugPrint("=== Initializing Player ===");
-    debugPrint("Movie: ${widget.movie.title}");
-    debugPrint("Source Type: ${widget.movie.sourceType}");
-    debugPrint("Video ID/URL: ${widget.movie.VideoUrl}");
-
-    if (widget.movie.sourceType == 'youtube') {
-      // YouTube videos
-      _youtubeController = YoutubePlayerController(
-        initialVideoId: widget.movie.VideoUrl,
-        flags: const YoutubePlayerFlags(
-          autoPlay: true,
-          mute: true,
-          hideControls: false,
-          loop: true,
-        ),
-      );
-    } else if (widget.movie.sourceType == 'local') {
-      // Local asset videos
-      String videoPath = widget.movie.VideoUrl.trim();
-      
-
-      if (videoPath.startsWith('/')) {
-        videoPath = videoPath.substring(1);
-      }
-      
-      debugPrint("Loading local asset: $videoPath");
-      _videoController = VideoPlayerController.asset(videoPath);
-      _initializeVideoController();
-      
-    } else if (widget.movie.sourceType == 'cloudinary') {
-      // Cloudinary network videos (from database)
-      debugPrint("Loading Cloudinary video: ${widget.movie.VideoUrl}");
-      _videoController = VideoPlayerController.networkUrl(
-        Uri.parse(widget.movie.VideoUrl),
-      );
-      _initializeVideoController();
-      
+  void _setupVideo() {
+    String path = widget.movie.videoUrl;
+    
+    // Simple logic: if it has http, it's from database/cloudinary. Else, it's local.
+    if (path.startsWith('http')) {
+      _controller = VideoPlayerController.networkUrl(Uri.parse(path));
     } else {
-      // Fallback: try to detect if it's a URL or asset path
-      String videoPath = widget.movie.VideoUrl.trim();
-      
-      if (videoPath.startsWith('http://') || videoPath.startsWith('https://')) {
-        // Network URL
-        debugPrint("Loading network video: $videoPath");
-        _videoController = VideoPlayerController.networkUrl(Uri.parse(videoPath));
-      } else {
-        // Asset path
-        if (videoPath.startsWith('/')) videoPath = videoPath.substring(1);
-        debugPrint("Loading asset: $videoPath");
-        _videoController = VideoPlayerController.asset(videoPath);
-      }
-      _initializeVideoController();
+      _controller = VideoPlayerController.asset(path);
     }
-  }
 
-  void _initializeVideoController() {
-    _videoController?.initialize().then((_) {
+    _controller?.initialize().then((_) {
       if (mounted) {
-        setState(() {});
-        _videoController?.play();
-        _videoController?.setLooping(true);
-        debugPrint("✅ Video initialized successfully");
+        setState(() => _isInitialized = true);
+        _controller?.play();
+        _controller?.setLooping(true);
       }
     }).catchError((error) {
-      debugPrint("❌ Video Player Error: $error");
-      if (mounted) {
-        setState(() => _isError = true);
-      }
+       debugPrint("Video play error: $error");
     });
   }
 
   @override
   void dispose() {
-    _videoController?.dispose();
-    _youtubeController?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final MovieController movieController = Get.find<MovieController>();
+
     return Stack(
       children: [
-        // Video Layer
+        // 1. THE VIDEO
         Positioned.fill(
-          child: _isError 
-            ? _buildErrorWidget()
-            : widget.movie.sourceType == 'youtube'
-              ? YoutubePlayer(controller: _youtubeController!)
-              : (_videoController != null && _videoController!.value.isInitialized)
-                ? FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _videoController!.value.size.width,
-                      height: _videoController!.value.size.height,
-                      child: VideoPlayer(_videoController!),
-                    ),
-                  )
-                : const Center(child: CircularProgressIndicator(color: Colors.orange)),
-        ),
-
-        // Tap to play/pause (for non-YouTube videos)
-        if (widget.movie.sourceType != 'youtube' && 
-            _videoController != null && 
-            _videoController!.value.isInitialized)
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                if (_videoController!.value.isPlaying) {
-                  _videoController!.pause();
-                } else {
-                  _videoController!.play();
-                }
-              });
-            },
-            child: Container(color: Colors.transparent),
-          ),
-
-        // UI Overlay
-        _buildContentOverlay(),
-        _buildSideActions(),
-      ],
-    );
-  }
-
-  Widget _buildErrorWidget() {
-    return Container(
-      color: Colors.grey[900],
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.orange, size: 40),
-            const SizedBox(height: 10),
-            const Text(
-              "Video Unavailable", 
-              style: TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.movie.title,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContentOverlay() {
-    return Positioned(
-      left: 20,
-      bottom: 80, 
-      right: 80,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.movie.title.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white, 
-              fontSize: 24, 
-              fontWeight: FontWeight.w900, 
-              letterSpacing: 1.2,
-              shadows: [
-                Shadow(blurRadius: 10, color: Colors.black, offset: Offset(2, 2)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.movie.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white70, 
-              fontSize: 13, 
-              height: 1.4,
-              shadows: [
-                Shadow(blurRadius: 8, color: Colors.black, offset: Offset(1, 1)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Rating and Year
-          Row(
-            children: [
-              const Icon(Icons.star, color: Colors.orange, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                widget.movie.rating.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                widget.movie.releaseDate,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: () async {
-              const String netflixUrl = "https://www.netflix.com";
-              final Uri url = Uri.parse(netflixUrl);
-              try {
-                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                  throw Exception('Could not launch $url');
-                }
-              } catch (e) {
-                debugPrint("Error opening Netflix: $e");
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.play_arrow, color: Colors.white, size: 20),
-                  SizedBox(width: 6),
-                  Text(
-                    "WATCH NOW",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
+          child: _isInitialized
+              ? FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _controller!.value.size.width,
+                    height: _controller!.value.size.height,
+                    child: VideoPlayer(_controller!),
                   ),
+                )
+              : const Center(child: CircularProgressIndicator(color: Colors.orange)),
+        ),
+
+        // 2. GRADIENT OVERLAY (to make text readable)
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.7),
                 ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+
+        // 3. THE INFO AND BUTTONS
+        Positioned(
+          bottom: 15, // this si to ake it close to the bottom
+          left: 15,
+          right: 15,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.movie.title.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white, 
+                  fontSize: 22, // Even more compact
+                  fontWeight: FontWeight.bold,
+                  shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // ROW FOR BUTTONS
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _showStreamingPicker(context, widget.movie.title),
+                    icon: const Icon(Icons.play_arrow, size: 20),
+                    label: const Text("WATCH NOW", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Obx(() => InkWell(
+                    onTap: () => movieController.toggleWatchlist(widget.movie),
+                    child: Row(
+                      children: [
+                        Icon(
+                          movieController.isInWatchlist(widget.movie) 
+                              ? Icons.check_circle 
+                              : Icons.add_circle_outline,
+                          color: Colors.orange,
+                          size: 30,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          movieController.isInWatchlist(widget.movie) ? "SAVED" : "LIST",
+                          style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Description at the absolute bottom
+              Text(
+                widget.movie.description,
+                style: const TextStyle(
+                  color: Colors.white60, 
+                  fontSize: 10, // Very small for that TikTok look
+                  height: 1.2,
+                  shadows: [Shadow(blurRadius: 5, color: Colors.black)],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildSideActions() {
-    final MovieController movieController = Get.find<MovieController>();
-    return Positioned(
-      right: 15,
-      bottom: 100,
-      child: Column(
-        children: [
-          _sideIconButton(Icons.local_fire_department, "85%", Colors.orange, "Hype"),
-          const SizedBox(height: 25),
-          _sideIconButton(Icons.rate_review_outlined, "Reviews", Colors.white, "Reviews"),
-          const SizedBox(height: 25),
-          Obx(() => _sideIconButton(
-            movieController.isInWatchlist(widget.movie) ? Icons.check_circle : Icons.add, 
-            movieController.isInWatchlist(widget.movie) ? "Saved" : "+ List", 
-            movieController.isInWatchlist(widget.movie) ? Colors.orange : Colors.white, 
-            "Watchlist",
-            onTap: () => movieController.toggleWatchlist(widget.movie),
-          )),
-          const SizedBox(height: 25),
-          _sideIconButton(Icons.send_outlined, "Send", Colors.white, "Sharing"),
-          const SizedBox(height: 25),
-          _sideIconButton(Icons.info_outline, "Details", Colors.white, "Movie Details"),
-        ],
+  void _showStreamingPicker(BuildContext context, String title) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-
-  Widget _sideIconButton(IconData icon, String label, Color color, String featureName, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap ?? () {
-        Get.snackbar(
-          "Coming Soon",
-          "$featureName is being prepared.",
-          backgroundColor: Colors.white,
-          colorText: Colors.black,
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(20),
-          duration: const Duration(seconds: 2),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "WATCH '$title' ON:",
+                style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              _streamingTile(Icons.movie, "MovieBox Pro", "https://www.movieboxpro.app"),
+              _streamingTile(Icons.play_circle_fill, "Netflix", "https://www.netflix.com"),
+              _streamingTile(Icons.video_library, "Prime Video", "https://www.amazon.com"),
+              _streamingTile(Icons.tv, "Disney+", "https://www.disneyplus.com"),
+              const SizedBox(height: 10),
+            ],
+          ),
         );
       },
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 30),
-          const SizedBox(height: 4),
-          Text(
-            label, 
-            style: TextStyle(
-              color: color, 
-              fontSize: 10, 
-              fontWeight: FontWeight.bold,
-              shadows: const [
-                Shadow(blurRadius: 4, color: Colors.black),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
+  }
+
+  Widget _streamingTile(IconData icon, String name, String url) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.orange),
+      title: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+      onTap: () {
+        Navigator.pop(context);
+        _openLink(url);
+      },
+    );
+  }
+
+  Future<void> _openLink(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) debugPrint("Error opening $url");
   }
 }

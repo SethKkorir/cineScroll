@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/views/splash_screen.dart';
 import 'package:get/get.dart';
 import 'controllers/logincontroller.dart';
+import 'controllers/movie_controller.dart';
 
 void main() {
-  // Pre-load the LoginController so it's always available
+  // Pre-load the Controllers so they are always available
   Get.put(LoginController(), permanent: true);
+  Get.put(MovieController(), permanent: true);
   runApp(const MyApp());
 }
 
