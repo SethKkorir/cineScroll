@@ -10,7 +10,6 @@ class HomeFeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Finding our movie controller
     final MovieController movieController = Get.find<MovieController>();
 
     return Scaffold(
@@ -27,9 +26,13 @@ class HomeFeedScreen extends StatelessWidget {
           );
         }
 
-        debugPrint("Building Home Feed with ${movieController.movies.length} movies");
-
+        // --- THIS IS THE MAGIC PART ---
+        // We use a PageController with the selected movie as the starting page.
+        // The ValueKey ensures that if we pick a different movie in Discover, 
+        // the Home Feed resets and jumps to that movie.
         return PageView.builder(
+          key: ValueKey(movieController.selectedMovieIndex.value), 
+          controller: PageController(initialPage: movieController.selectedMovieIndex.value),
           scrollDirection: Axis.vertical,
           itemCount: movieController.movies.length,
           itemBuilder: (context, index) {
@@ -61,8 +64,6 @@ class _ReelTileState extends State<ReelTile> {
 
   void _setupVideo() {
     String path = widget.movie.videoUrl;
-    
-    // Simple logic: if it has http, it's from database/cloudinary. Else, it's local.
     if (path.startsWith('http')) {
       _controller = VideoPlayerController.networkUrl(Uri.parse(path));
     } else {
@@ -92,7 +93,6 @@ class _ReelTileState extends State<ReelTile> {
 
     return Stack(
       children: [
-        // 1. THE VIDEO
         Positioned.fill(
           child: _isInitialized
               ? FittedBox(
@@ -105,8 +105,6 @@ class _ReelTileState extends State<ReelTile> {
                 )
               : const Center(child: CircularProgressIndicator(color: Colors.orange)),
         ),
-
-        // 2. GRADIENT OVERLAY (to make text readable)
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -122,10 +120,8 @@ class _ReelTileState extends State<ReelTile> {
             ),
           ),
         ),
-
-        // 3. THE INFO AND BUTTONS
         Positioned(
-          bottom: 15, // this si to ake it close to the bottom
+          bottom: 15,
           left: 15,
           right: 15,
           child: Column(
@@ -135,25 +131,25 @@ class _ReelTileState extends State<ReelTile> {
                 widget.movie.title.toUpperCase(),
                 style: const TextStyle(
                   color: Colors.white, 
-                  fontSize: 22, // Even more compact
-                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
                   shadows: [Shadow(blurRadius: 10, color: Colors.black)],
                 ),
               ),
-              const SizedBox(height: 12),
-              
-              // ROW FOR BUTTONS
+              const SizedBox(height: 15),
               Row(
                 children: [
                   ElevatedButton.icon(
                     onPressed: () => _showStreamingPicker(context, widget.movie.title),
                     icon: const Icon(Icons.play_arrow, size: 20),
-                    label: const Text("WATCH NOW", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text("WATCH NOW", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      elevation: 0,
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -179,12 +175,11 @@ class _ReelTileState extends State<ReelTile> {
                 ],
               ),
               const SizedBox(height: 10),
-              // Description at the absolute bottom
               Text(
                 widget.movie.description,
                 style: const TextStyle(
-                  color: Colors.white60, 
-                  fontSize: 10, // Very small for that TikTok look
+                  color: Colors.white,
+                  fontSize: 10,
                   height: 1.2,
                   shadows: [Shadow(blurRadius: 5, color: Colors.black)],
                 ),
@@ -201,26 +196,26 @@ class _ReelTileState extends State<ReelTile> {
   void _showStreamingPicker(BuildContext context, String title) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.grey[900],
+      backgroundColor: const Color(0xFF0F0F0F),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       ),
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 25),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "WATCH '$title' ON:",
-                style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16),
+                "WATCH '$title' ON:".toUpperCase(),
+                style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
               _streamingTile(Icons.movie, "MovieBox Pro", "https://www.movieboxpro.app"),
               _streamingTile(Icons.play_circle_fill, "Netflix", "https://www.netflix.com"),
               _streamingTile(Icons.video_library, "Prime Video", "https://www.amazon.com"),
               _streamingTile(Icons.tv, "Disney+", "https://www.disneyplus.com"),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
             ],
           ),
         );

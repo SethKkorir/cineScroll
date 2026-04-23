@@ -6,7 +6,7 @@ class MovieModel {
   final String videoUrl;
   final String releaseDate;
   final double rating;
-  final String sourceType; // Added this back to fix the compile error
+  final String sourceType;
 
   MovieModel({
     required this.id,
@@ -16,7 +16,7 @@ class MovieModel {
     required this.videoUrl,
     required this.releaseDate,
     required this.rating,
-    this.sourceType = "network", // Default is network
+    this.sourceType = "network",
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
@@ -26,8 +26,14 @@ class MovieModel {
       return 0.0;
     }
 
+    int parseId(dynamic val) {
+      if (val is int) return val;
+      if (val is String) return int.tryParse(val) ?? 0;
+      return 0;
+    }
+
     return MovieModel(
-      id: json['id'] is int ? json['id'] : 0,
+      id: parseId(json['id']),
       title: json['title']?.toString() ?? 'No Title',
       description: json['description']?.toString() ?? '',
       posterUrl: (json['posterUrl'] ?? json['poster_url'] ?? '').toString(),

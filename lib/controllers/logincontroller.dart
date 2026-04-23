@@ -41,10 +41,18 @@ class LoginController extends GetxController {
         
         // Handle nested user object from server
         if (data['user'] != null) {
-          userId.value = data['user']['id'] ?? 0;
-          userName.value = data['user']['fullName'] ?? data['user']['full_name'] ?? "User";
-          userBio.value = data['user']['bio'] ?? "Cinema Lover 🍿";
-          profileUrl.value = data['user']['profileUrl'] ?? "";
+          var u = data['user'];
+          
+          // Safely parse ID
+          if (u['id'] is int) {
+            userId.value = u['id'];
+          } else if (u['id'] is String) {
+            userId.value = int.tryParse(u['id']) ?? 0;
+          }
+
+          userName.value = u['fullName'] ?? u['full_name'] ?? "User";
+          userBio.value = u['bio'] ?? "Cinema Lover 🍿";
+          profileUrl.value = u['profileUrl'] ?? "";
         }
 
         // --- NEW: Sync Watchlist after login ---

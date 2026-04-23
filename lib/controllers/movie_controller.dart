@@ -6,13 +6,20 @@ import '../models/movie.dart';
 import 'logincontroller.dart';
 
 class MovieController extends GetxController {
+  // --- DATA ---
   var movies = <MovieModel>[].obs;
-  var isLoading = true.obs;
   var watchlist = <MovieModel>[].obs;
+  var isLoading = true.obs;
+
+  // --- NAVIGATION TRACKING ---
+  var currentTabIndex = 0.obs;
+  var selectedMovieIndex = 0.obs;
+
+  // --- SERVER URL ---
 
   final String baseUrl = "http://10.7.11.220:3000";
 
-  // The 2 Local Movies
+  // --- DEMO MOVIE (Local) ---
   final MovieModel local1 = MovieModel(
     id: 1,
     title: "CINESCROLL EXCLUSIVE",
@@ -24,50 +31,53 @@ class MovieController extends GetxController {
     rating: 5.0,
   );
 
-  final MovieModel local2 = MovieModel(
-    id: 2,
-    title: "GREENLAND: MIGRATION",
-    description: "The countdown to extinction begins.",
-    videoUrl: "assets/video2.mp4",
-    posterUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000",
-    sourceType: "local",
-    releaseDate: "2024",
-    rating: 4.8,
-  );
-
   @override
   void onInit() {
     super.onInit();
-    loadMovies();
+    loadMovies(); // Get movies from DB on startup
+    setupAutoSync(); // Automatically fetch watchlist after login
   }
 
+  // This part automatically watches for when a user logs in
+  void setupAutoSync() {
+    try {
+      final loginController = Get.find<LoginController>();
+      ever(loginController.userId, (int uid) {
+        if (uid != 0) {
+          debugPrint("Login detected. Syncing watchlist...");
+          fetchWatchlist();
+        } else {
+          watchlist.clear();
+        }
+      });
+    } catch (e) {
+      debugPrint("LoginController not found yet");
+    }
+  }
+
+  // 1. Load All Movies from Server
   Future<void> loadMovies() async {
     isLoading.value = true;
     try {
       final response = await http.get(Uri.parse('$baseUrl/movies'));
-
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
-        List<MovieModel> fromDb = data.map((m) => MovieModel.fromJson(m)).toList();
-        var top5FromDb = fromDb.take(5).toList();
-        movies.assignAll([local1, local2, ...top5FromDb]);
+        List<MovieModel> dbMovies = data.map((m) => MovieModel.fromJson(m)).toList();
         
-        // After loading movies, if we are logged in, fetch the watchlist
-        fetchWatchlist();
-      } else {
-        movies.assignAll([local1, local2]);
+        // Combine local demo + database movies
+        movies.assignAll([local1, ...dbMovies]);
       }
     } catch (e) {
-      debugPrint("Error loading movies: $e");
-      movies.assignAll([local1, local2]);
+      debugPrint("Server down, using local only: $e");
+      movies.assignAll([local1]); 
     } finally {
       isLoading.value = false;
     }
   }
 
+  // 2. Get the User's Watchlist from Server
   Future<void> fetchWatchlist() async {
-    final loginController = Get.find<LoginController>();
-    int uid = loginController.userId.value;
+    final uid = Get.find<LoginController>().userId.value;
     if (uid == 0) return;
 
     try {
@@ -75,58 +85,46 @@ class MovieController extends GetxController {
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         watchlist.assignAll(data.map((m) => MovieModel.fromJson(m)).toList());
+        debugPrint("Watchlist loaded: ${watchlist.length} items");
       }
     } catch (e) {
-      debugPrint("Error fetching watchlist: $e");
+      debugPrint("Watchlist fetch error: $e");
     }
   }
 
+  // 3. Save or Remove from Watchlist
   Future<void> toggleWatchlist(MovieModel movie) async {
-    final loginController = Get.find<LoginController>();
-    int uid = loginController.userId.value;
+    final uid = Get.find<LoginController>().userId.value;
 
     if (uid == 0) {
-      Get.snackbar("Notice", "Please login to save movies", 
-        backgroundColor: Colors.white, colorText: Colors.black);
+      Get.snackbar("LOGIN REQUIRED", "Please sign in to save movies",
+          backgroundColor: Colors.white, colorText: Colors.black);
       return;
     }
 
-    // Don't save local movies to the database
-    if (movie.sourceType == "local") {
-      if (watchlist.any((m) => m.id == movie.id && m.sourceType == "local")) {
-        watchlist.removeWhere((m) => m.id == movie.id && m.sourceType == "local");
-      } else {
-        watchlist.add(movie);
-      }
-      return;
-    }
-
-    // Handle database movies
-    bool alreadyIn = watchlist.any((m) => m.id == movie.id && m.sourceType != "local");
-
-    if (alreadyIn) {
-      // Remove from server
-      watchlist.removeWhere((m) => m.id == movie.id);
-      try {
-        await http.delete(Uri.parse('$baseUrl/watchlist/$uid/${movie.id}'));
-      } catch (e) {
-        debugPrint("Error removing from watchlist: $e");
+    // Logic: If already in list, REMOVE it. Otherwise, ADD it.
+    if (isInWatchlist(movie)) {
+      watchlist.removeWhere((m) => m.id == movie.id && m.sourceType == movie.sourceType);
+      
+      // Tell the database to delete it too
+      if (movie.sourceType != "local") {
+        http.delete(Uri.parse('$baseUrl/watchlist/$uid/${movie.id}'));
       }
     } else {
-      // Add to server
       watchlist.add(movie);
-      try {
-        await http.post(
+      
+      // Tell the database to save it too
+      if (movie.sourceType != "local") {
+        http.post(
           Uri.parse('$baseUrl/watchlist'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'userId': uid, 'movieId': movie.id}),
         );
-      } catch (e) {
-        debugPrint("Error adding to watchlist: $e");
       }
     }
   }
 
+  // Helper to check if a movie is saved
   bool isInWatchlist(MovieModel movie) {
     return watchlist.any((m) => m.id == movie.id && m.sourceType == movie.sourceType);
   }

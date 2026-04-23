@@ -20,157 +20,151 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'CINESCROLL',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'JOIN THE REVOLUTION',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 50),
-                
-                // Name Field
-                _buildTextField(nameController, 'FULL NAME', Icons.person_outline),
-                const SizedBox(height: 20),
-                
-                // Email Field
-                _buildTextField(emailController, 'EMAIL ADDRESS', Icons.alternate_email),
-                const SizedBox(height: 20),
-                
-                // Password Field
-                _buildTextField(
-                  passwordController, 
-                  'PASSWORD', 
-                  Icons.lock_outline, 
-                  isPassword: true
-                ),
-                
-                const SizedBox(height: 40),
-
-                // Signup Button
-                Obx(() => SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: loginController.isLoading.value
-                        ? null
-                        : () async {
-                            bool success = await loginController.signup(
-                                nameController.text, 
-                                emailController.text, 
-                                passwordController.text);
-                            if (success) {
-                              Get.offAll(() => const LoginScreen());
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                      elevation: 0,
-                    ),
-                    child: loginController.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('CREATE ACCOUNT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-                  ),
-                )),
-
-                const SizedBox(height: 20),
-
-                // Social Logins
-                Row(
-                  children: [
-                    const Expanded(child: Divider(color: Colors.white24)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: Text("OR JOIN WITH", style: TextStyle(color: Colors.white38, fontSize: 10)),
-                    ),
-                    const Expanded(child: Divider(color: Colors.white24)),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                
-                // Google Sign In
-                GestureDetector(
-                  onTap: () => _showComingSoon("Google Signup"),
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.g_mobiledata, color: Colors.black, size: 35),
-                        SizedBox(width: 10),
-                        Text("GOOGLE", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900)),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 30),
-
-                // Footer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("ALREADY A MEMBER?", style: TextStyle(color: Colors.white54, fontSize: 12)),
-                    TextButton(
-                      onPressed: () => Get.to(() => const LoginScreen()),
-                      child: const Text("SIGN IN HERE", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
-                    ),
-                  ],
-                ),
-              ],
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: Stack(
+        children: [
+          // Subtle Textured Background
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
+          Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 35),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'CINESCROLL',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 6,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    const Text(
+                      'JOIN THE REVOLUTION',
+                      style: TextStyle(
+                        color: Colors.white24,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 50),
+
+                    // Inputs
+                    _buildInputField(nameController, 'FULL NAME', Icons.person_outline),
+                    const SizedBox(height: 15),
+                    _buildInputField(emailController, 'EMAIL ADDRESS', Icons.email_outlined),
+                    const SizedBox(height: 15),
+                    _buildInputField(
+                      passwordController, 
+                      'PASSWORD', 
+                      Icons.lock_open_rounded, 
+                      isPassword: true
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Signup Button
+                    Obx(() => SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: loginController.isLoading.value
+                            ? null
+                            : () async {
+                                bool success = await loginController.signup(
+                                    nameController.text,
+                                    emailController.text,
+                                    passwordController.text);
+                                if (success) {
+                                  Get.offAll(() => const LoginScreen());
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          elevation: 0,
+                        ),
+                        child: loginController.isLoading.value
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : const Text('CREATE ACCOUNT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1)),
+                      ),
+                    )),
+
+                    const SizedBox(height: 40),
+
+                    // Google Signup
+                    OutlinedButton.icon(
+                      onPressed: () => _showComingSoon("Google Signup"),
+                      icon: const Icon(Icons.g_mobiledata, size: 30),
+                      label: const Text("SIGN UP WITH GOOGLE"),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    // Footer
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Already a member? ", style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 13)),
+                        GestureDetector(
+                          onTap: () => Get.to(() => const LoginScreen()),
+                          child: const Text(
+                            "SIGN IN", 
+                            style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 13)
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
+  Widget _buildInputField(TextEditingController controller, String label, IconData icon, {bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: const Color(0xFF151515),
         borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword ? !_isPasswordVisible : false,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+          prefixIcon: Icon(icon, color: Colors.orange.withOpacity(0.4), size: 20),
           suffixIcon: isPassword ? IconButton(
-            icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white54, size: 20),
+            icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white24, size: 20),
             onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
           ) : null,
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold),
+          labelStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 11, fontWeight: FontWeight.bold),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
         ),
       ),
     );
@@ -178,18 +172,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _showComingSoon(String feature) {
     Get.snackbar(
-      "Alert",
-      "$feature is currently being prepared for CINESCROLL.",
+      "Heads Up",
+      "$feature will be ready soon.",
       backgroundColor: Colors.white,
       colorText: Colors.black,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(20),
-      duration: const Duration(seconds: 2),
-      borderWidth: 1,
-      borderColor: Colors.grey.withValues(alpha: 0.1),
-      boxShadows: [
-        BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-      ],
+      borderRadius: 4,
     );
   }
 }

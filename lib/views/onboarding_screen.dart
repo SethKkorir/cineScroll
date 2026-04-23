@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'login_screen.dart';
-import 'signup.dart'; // Import SignupScreen
+import 'signup.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -9,122 +9,142 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set background to black for the safe area gap
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background Image (Now contained in SafeArea)
-            Positioned.fill(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // 1. BACKGROUND IMAGE (Rugged/Cinematic)
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.7, 
               child: Image.network(
                 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025',
                 fit: BoxFit.cover,
               ),
             ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.8),
-                      Colors.black,
-                    ],
-                  ),
+          ),
+          
+          // 2. GRADIENT OVERLAY
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.5, 0.9],
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.black.withOpacity(0.6),
+                    Colors.black,
+                  ],
                 ),
               ),
             ),
+          ),
 
-            // Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          // 3. CONTENT
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    "CINE SCROLL",
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 4,
-                    ),
+                  const SizedBox(height: 30),
+                  // BRANDING
+                  Column(
+                    children: [
+                      const Text(
+                        "CINE SCROLL",
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(height: 2, width: 30, color: Colors.orange),
+                    ],
                   ),
+                  
                   const Spacer(),
+
+                  // MAIN TEXT
                   const Text(
-                    "Find it fast.",
+                    "FIND IT FAST.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      height: 1.1,
                     ),
                   ),
                   const SizedBox(height: 15),
                   const Text(
-                    "Stop searching. Start scrolling.",
+                    "Stop searching.\nStart scrolling.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 18,
                       fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 50),
                   
-                  // Get Started Button
+                  const SizedBox(height: 60),
+
+                  // GET STARTED BUTTON
                   GestureDetector(
-                    onTap: () => Get.to(() => const SignupScreen()), // Navigate to SignupScreen
+                    onTap: () => Get.to(() => const SignupScreen()),
                     child: Container(
                       height: 60,
                       width: double.infinity,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: Colors.orange,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
                         "GET STARTED",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
-                  
-                  // Secondary Navigation
+                  const SizedBox(height: 25),
+
+                  // SIGN IN LINK
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Already have an account? ",
-                        style: TextStyle(color: Colors.white60),
+                        "ALREADY A MEMBER? ",
+                        style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                       GestureDetector(
                         onTap: () => Get.to(() => const LoginScreen()),
                         child: const Text(
-                          "Sign In",
+                          "SIGN IN",
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
                             decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
