@@ -11,10 +11,10 @@ class LoginController extends GetxController {
   var userId = 0.obs; // Added to track user ID for watchlist
   var userName = "User".obs;
   var userEmail = "".obs;
-  var userBio = "Cinema Lover 🍿".obs; // Added bio
+  var userBio = "Cinema Lover ".obs; // Added bio
   var profileUrl = "".obs; // Added profile URL
  
-  final String baseUrl = "http://10.7.11.220:3000";
+  final String baseUrl = "http://10.7.28.8:3000";
 
   Future<bool> login(String email, String password) async {
     if (email.isEmpty || password.isEmpty) {
@@ -24,6 +24,23 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     debugPrint("Attempting login for: $email");
+
+    // --- DUMMY LOGIN FOR TESTING ---
+    if (email == "seth" && password == "123") {
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network lag
+      userId.value = 999;
+      userName.value = "Seth";
+      userEmail.value = "seth@example.com";
+      userBio.value = "Offline Mode 🛠️";
+      isLoading.value = false;
+      
+      Get.snackbar('Success', 'Logged in as Seth (Offline)',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.white,
+          colorText: Colors.black);
+      return true;
+    }
+    // -------------------------------
 
     try {
       final response = await http.post(
@@ -93,7 +110,7 @@ class LoginController extends GetxController {
       final response = await http.post(
         Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'fullName': name, 'email': email, 'password': password}),
+        body: jsonEncode({'full_name': name, 'email': email, 'password': password}), // Changed fullName to full_name
       );
 
       isLoading.value = false;
@@ -106,7 +123,13 @@ class LoginController extends GetxController {
             margin: const EdgeInsets.all(20));
         return true;
       } else {
-        _showError('Email might already be in use');
+        // Try to get error message from server
+        String errorMsg = 'Signup failed';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMsg = errorData['message'] ?? errorData['error'] ?? 'Email might already be in use';
+        } catch (_) {}
+        _showError(errorMsg);
         return false;
       }
     } catch (e) {

@@ -17,7 +17,7 @@ class MovieController extends GetxController {
 
   // --- SERVER URL ---
 
-  final String baseUrl = "http://10.7.11.220:3000";
+  final String baseUrl = "http://10.7.28.8:3000";
 
   // --- DEMO MOVIE (Local) ---
   final MovieModel local1 = MovieModel(

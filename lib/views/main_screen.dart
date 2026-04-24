@@ -11,10 +11,8 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // This finds the controller we created earlier
     final MovieController movieController = Get.find<MovieController>();
 
-    // The list of screens for each tab
     final List<Widget> pages = [
       const HomeFeedScreen(),
       const DiscoverScreen(),
@@ -22,7 +20,6 @@ class MainScreen extends StatelessWidget {
       const ProfileScreen(),
     ];
 
-    // The titles for the top bar
     final List<String> titles = [
       "CINESCROLL",
       "DISCOVER",
@@ -30,49 +27,56 @@ class MainScreen extends StatelessWidget {
       "PROFILE",
     ];
 
-    return Obx(() => Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(
-          titles[movieController.currentTabIndex.value],
-          style: const TextStyle(
-            color: Colors.orange,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 4,
-            fontSize: 20,
+    return Obx(() => Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFBDC3C7), Color(0xFFEFF3F5)],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Let the gradient show through
+        appBar: AppBar(
+          title: Text(
+            titles[movieController.currentTabIndex.value],
+            style: const TextStyle(
+              color: Colors.black, // Changed from Orange to Black
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+              fontSize: 22,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: IndexedStack(
+          index: movieController.currentTabIndex.value,
+          children: pages,
+        ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: movieController.currentTabIndex.value,
+            onTap: (index) => movieController.currentTabIndex.value = index,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: Colors.orange,
+            unselectedItemColor: Colors.grey,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.movie_filter_outlined), activeIcon: Icon(Icons.movie_filter), label: "Feed"),
+              BottomNavigationBarItem(icon: Icon(Icons.search_outlined), activeIcon: Icon(Icons.search), label: "Search"),
+              BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), activeIcon: Icon(Icons.bookmark), label: "Saved"),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: "Me"),
+            ],
           ),
         ),
-        backgroundColor: Colors.black,
-        centerTitle: true,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: Colors.white.withOpacity(0.05), height: 1),
-        ),
-      ),
-      body: IndexedStack(
-        index: movieController.currentTabIndex.value,
-        children: pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: movieController.currentTabIndex.value,
-        onTap: (index) {
-          movieController.currentTabIndex.value = index;
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.white24,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "HOME"),
-          BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), label: "DISCOVER"),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), label: "SAVED"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "PROFILE"),
-        ],
       ),
     ));
   }

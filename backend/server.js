@@ -30,14 +30,16 @@ function validateMovieInput(title, description, poster_url, video_url, release_d
 }
 
 app.post('/users', async (req, res) => {
-    const { fullName, email, password } = req.body;
+    const { fullName, full_name, email, password } = req.body;
+    const nameToInsert = full_name || fullName;
+
     if (!email || !password) {
         return res.status(400).json({ error: 'Invalid input' });
     }
     try {
         const [result] = await db.execute(
-            'INSERT INTO users (fullName, email, password) VALUES (?, ?, ?)',
-            [fullName || null, email, password]
+            'INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)',
+            [nameToInsert || null, email, password]
         );
         res.status(201).json({ user_id: result.insertId });
     } catch (error) {
@@ -111,7 +113,7 @@ app.get('/watchlist/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
         const [rows] = await db.execute(
-            'SELECT m.* FROM movies m JOIN watchlist w ON m.id = w.movieId WHERE w.userId = ?',
+            'SELECT m.* FROM movies m JOIN watchlist w ON m.id = w.movie_id WHERE w.user_id = ?',
             [userId]
         );
         res.json(rows);
@@ -123,11 +125,14 @@ app.get('/watchlist/:userId', async (req, res) => {
 
 // 2. Add to watchlist
 app.post('/watchlist', async (req, res) => {
-    const { userId, movieId } = req.body;
+    const { userId, user_id, movieId, movie_id } = req.body;
+    const final_uid = user_id || userId;
+    const final_mid = movie_id || movieId;
+
     try {
         await db.execute(
-            'INSERT IGNORE INTO watchlist (userId, movieId) VALUES (?, ?)',
-            [userId, movieId]
+            'INSERT IGNORE INTO watchlist (user_id, movie_id) VALUES (?, ?)',
+            [final_uid, final_mid]
         );
         res.status(201).json({ success: true, message: 'Added to watchlist' });
     } catch (error) {
@@ -141,7 +146,7 @@ app.delete('/watchlist/:userId/:movieId', async (req, res) => {
     const { userId, movieId } = req.params;
     try {
         await db.execute(
-            'DELETE FROM watchlist WHERE userId = ? AND movieId = ?',
+            'DELETE FROM watchlist WHERE user_id = ? AND movie_id = ?',
             [userId, movieId]
         );
         res.json({ success: true, message: 'Removed from watchlist' });
@@ -157,7 +162,7 @@ app.delete('/watchlist/:userId/:movieId', async (req, res) => {
 app.get('/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const [rows] = await db.execute('SELECT id, fullName, email, bio, profileUrl, created_at FROM users WHERE id = ?', [id]);
+        const [rows] = await db.execute('SELECT id, full_name, email, bio, profile_url, created_at FROM users WHERE id = ?', [id]);
         if (rows.length > 0) {
             res.json(rows[0]);
         } else {
@@ -173,7 +178,7 @@ app.get('/users/:id', async (req, res) => {
 app.get('/users/:id/stats', async (req, res) => {
     const { id } = req.params;
     try {
-        const [rows] = await db.execute('SELECT COUNT(*) as watchlistCount FROM watchlist WHERE userId = ?', [id]);
+        const [rows] = await db.execute('SELECT COUNT(*) as watchlistCount FROM watchlist WHERE user_id = ?', [id]);
         res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching stats:', error);
@@ -184,11 +189,11 @@ app.get('/users/:id/stats', async (req, res) => {
 // Update user profile (Bio, Name, Profile Image)
 app.put('/users/:id', async (req, res) => {
     const { id } = req.params;
-    const { fullName, bio, profileUrl } = req.body;
+    const { fullName, full_name, bio, profileUrl, profile_url } = req.body;
     try {
         await db.execute(
-            'UPDATE users SET fullName = ?, bio = ?, profileUrl = ? WHERE id = ?',
-            [fullName, bio || null, profileUrl || null, id]
+            'UPDATE users SET full_name = ?, bio = ?, profile_url = ? WHERE id = ?',
+            [full_name || fullName, bio || null, profile_url || profileUrl, id]
         );
         res.json({ success: true, message: 'Profile updated' });
     } catch (error) {

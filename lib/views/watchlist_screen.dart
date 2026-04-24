@@ -8,30 +8,25 @@ class WatchlistScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MovieController movieController = Get.find<MovieController>();
+    final movieController = Get.find<MovieController>();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       body: Obx(() {
         if (movieController.watchlist.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bookmark_border, color: Colors.white.withOpacity(0.05), size: 80),
+                const Icon(Icons.bookmark_add_outlined, color: Colors.black12, size: 100),
                 const SizedBox(height: 20),
-                Text(
-                  "YOUR WATCHLIST IS EMPTY",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.2),
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
+                const Text(
+                  "YOUR LIST IS EMPTY", 
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.black)
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  "Save trailers to watch them later.",
-                  style: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 13),
+                const Text(
+                  "Trailers you save will appear here.", 
+                  style: TextStyle(color: Colors.black54, fontSize: 14)
                 ),
               ],
             ),
@@ -39,64 +34,66 @@ class WatchlistScreen extends StatelessWidget {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.all(20),
           itemCount: movieController.watchlist.length,
-          itemBuilder: (context, index) {
-            final movie = movieController.watchlist[index];
-            return _buildWatchlistItem(movie, movieController);
-          },
+          itemBuilder: (context, index) => _item(movieController.watchlist[index], movieController),
         );
       }),
     );
   }
 
-  Widget _buildWatchlistItem(MovieModel movie, MovieController controller) {
+  // Simplified Item Widget
+  Widget _item(MovieModel movie, MovieController controller) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF151515),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4))],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(10),
+        dense: true, // Makes it more compact
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         leading: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: SizedBox(
-            width: 60,
-            height: 90,
-            child: movie.posterUrl.isNotEmpty 
-              ? Image.network(movie.posterUrl, fit: BoxFit.cover)
-              : Container(color: Colors.white10, child: const Icon(Icons.movie, color: Colors.orange)),
-          ),
+          borderRadius: BorderRadius.circular(8),
+          child: movie.posterUrl.isNotEmpty 
+            ? Image.network(movie.posterUrl, width: 45, height: 65, fit: BoxFit.cover)
+            : Container(width: 45, height: 65, color: Colors.grey[200], child: const Icon(Icons.movie, size: 16, color: Colors.grey)),
         ),
         title: Text(
-          movie.title.toUpperCase(),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 0.5),
+          movie.title.toUpperCase(), 
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold, 
+            fontSize: 12, 
+            letterSpacing: 0.3
+          )
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        subtitle: Row(
           children: [
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                const Icon(Icons.star, color: Colors.orange, size: 12),
-                const SizedBox(width: 4),
-                Text(movie.rating.toString(), style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                const SizedBox(width: 10),
-                Text(movie.releaseDate, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-              ],
+            const Icon(Icons.star, color: Colors.orange, size: 12),
+            const SizedBox(width: 4),
+            Text(
+              movie.rating.toString(), 
+              style: const TextStyle(
+                color: Colors.black54,
+                fontWeight: FontWeight.bold, 
+                fontSize: 10
+              )
+            ),
+            const SizedBox(width: 8),
+            Text(
+              movie.releaseDate,
+              style: const TextStyle(color: Colors.black38, fontSize: 10)
             ),
           ],
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white24, size: 20),
+          constraints: const BoxConstraints(), // Removes extra padding
+          padding: EdgeInsets.zero,
           onPressed: () => controller.toggleWatchlist(movie),
+          icon: const Icon(Icons.close, color: Colors.redAccent, size: 18),
         ),
-        onTap: () {
-          Get.snackbar(movie.title, "Playing trailer...", 
-            backgroundColor: Colors.orange, colorText: Colors.black, snackPosition: SnackPosition.BOTTOM);
-        },
       ),
     );
   }
